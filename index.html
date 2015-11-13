@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>SAS Token generator</title>
+  <style media="screen" type="text/css">
+    body {
+      color: #737373;
+    }
+
+    #uri,
+    #key-name,
+    #key {
+      height: 30px;
+      width: 500px;
+      font-size: 15px;
+      margin-bottom: 10px;
+      border: none;
+      border-bottom: 1px solid #7cbb00;
+    }
+
+    #generate,
+    #uri,
+    #key-name,
+    #key {
+      display: block;
+    }
+
+    #token {
+      background-color: #00a1f1;
+      color: #FFFFFF;
+      font-size: 20px;
+      height: 30px;
+      margin-top: 20px;
+      padding: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <input id="uri" placeholder="uri" type="text" />
+  <input id="key-name" placeholder="key name" type="text" />
+  <input id="key" placeholder="key" type="text" />
+  <a id="generate" onclick="javacript:generate()">Generate SAS Token</a>
+
+  <div id="token"></div>
+  <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha256.js"></script>
+  <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/enc-base64-min.js"></script>
+  <script type="application/javascript">
+    // 30 days
+    var monthDuration = 1000 * 60 * 60 * 24 * 30;
+
+    function expiry() {
+      return Date.now() + monthDuration;
+    }
+
+    function createToken(uri, key_name, key) {
+      var string_to_sign = encodeURIComponent(uri) + '\n' + expiry;
+      var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, key);
+      hmac.update(string_to_sign);
+      var hash = hmac.finalize();
+      var signature = hash.toString(CryptoJS.enc.Base64)
+      return 'SharedAccessSignature sr=' + encodeURIComponent(uri) + '&sig=' + encodeURIComponent(signature) + '&se=' + expiry() + '&skn=' + key_name;
+    }
+
+    function generate() {
+      var uri = document.getElementById('uri').value;
+      var keyName = document.getElementById('key-name').value;
+      var key = document.getElementById('key').value;
+
+      document.getElementById('token').innerHTML = createToken(uri, keyName, key);
+    }
+  </script>
+</body>
+
+</html>
