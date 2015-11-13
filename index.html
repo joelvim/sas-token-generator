@@ -5,7 +5,7 @@
   <title>SAS Token generator</title>
   <style media="screen" type="text/css">
     body {
-      color: #737373;
+      color: #262626;
     }
 
     #uri,
@@ -26,24 +26,58 @@
       display: block;
     }
 
+    form {
+      width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     #token {
+      font-size: 15px;
+      width: 500px;
+      height:100px;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    button {
       background-color: #00a1f1;
       color: #FFFFFF;
-      font-size: 20px;
-      height: 30px;
+      border-color: #00a1f1;
+      text-align: center;
+      vertical-align: middle;
+      outline: none;
+      cursor: pointer;
+      border: 1px #00a1f1 solid;
       margin-top: 20px;
-      padding: 5px;
+      width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 30px;
+    }
+    img {
+      margin-left:  auto;
+      margin-right: auto;
+      display: block;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 
 <body>
-  <input id="uri" placeholder="uri" type="text" />
-  <input id="key-name" placeholder="key name" type="text" />
-  <input id="key" placeholder="key" type="text" />
-  <a id="generate" onclick="javacript:generate()">Generate SAS Token</a>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Windows_Azure_logo.png"/>
+  <form>
+    <input id="uri" placeholder="uri" type="text" />
+    <input id="key-name" placeholder="key name" type="text" />
+    <input id="key" placeholder="key" type="text" />
+  </form>
+  <button id="generate" onclick="javacript:generate()">Generate SAS Token</button>
 
-  <div id="token"></div>
+  <div class="result">
+    <textarea id="token" onclick="javacript:this.select();" ></textarea>
+  </div>
   <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha256.js"></script>
   <script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/enc-base64-min.js"></script>
   <script type="application/javascript">
@@ -51,16 +85,19 @@
     var monthDuration = 1000 * 60 * 60 * 24 * 30;
 
     function expiry() {
-      return Date.now() + monthDuration;
+      return new Date(Date.now() + monthDuration).toISOString();
     }
 
     function createToken(uri, key_name, key) {
-      var string_to_sign = encodeURIComponent(uri) + '\n' + expiry;
+
+      var expiryTime = expiry();
+
+      var string_to_sign = encodeURIComponent(uri) + '\n' + expiryTime;
       var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, key);
       hmac.update(string_to_sign);
       var hash = hmac.finalize();
       var signature = hash.toString(CryptoJS.enc.Base64)
-      return 'SharedAccessSignature sr=' + encodeURIComponent(uri) + '&sig=' + encodeURIComponent(signature) + '&se=' + expiry() + '&skn=' + key_name;
+      return 'SharedAccessSignature sr=' + encodeURIComponent(uri) + '&sig=' + encodeURIComponent(signature) + '&se=' + encodeURIComponent(expiryTime) + '&skn=' + key_name;
     }
 
     function generate() {
